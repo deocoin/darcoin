@@ -1,15 +1,22 @@
-#ifndef OVERVIEWPAGE_H
-#define OVERVIEWPAGE_H
+// Copyright (c) 2011-2013 The Bitcoin developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#ifndef BITCOIN_QT_OVERVIEWPAGE_H
+#define BITCOIN_QT_OVERVIEWPAGE_H
+
+#include "amount.h"
 
 #include <QWidget>
+
+class ClientModel;
+class TransactionFilterProxy;
+class TxViewDelegate;
+class WalletModel;
 
 namespace Ui {
     class OverviewPage;
 }
-class ClientModel;
-class WalletModel;
-class TxViewDelegate;
-class TransactionFilterProxy;
 
 QT_BEGIN_NAMESPACE
 class QModelIndex;
@@ -27,28 +34,41 @@ public:
     void setClientModel(ClientModel *clientModel);
     void setWalletModel(WalletModel *walletModel);
     void showOutOfSyncWarning(bool fShow);
+    void updateDarksendProgress();
 
 public slots:
-    void setBalance(qint64 balance, qint64 unconfirmedBalance, qint64 immatureBalance);
+    void darkSendStatus();
+    void setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, const CAmount& anonymizedBalance,
+                    const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance);
 
 signals:
     void transactionClicked(const QModelIndex &index);
 
 private:
+    QTimer *timer;
     Ui::OverviewPage *ui;
     ClientModel *clientModel;
     WalletModel *walletModel;
-    qint64 currentBalance;
-    qint64 currentUnconfirmedBalance;
-    qint64 currentImmatureBalance;
+    CAmount currentBalance;
+    CAmount currentUnconfirmedBalance;
+    CAmount currentImmatureBalance;
+    CAmount currentAnonymizedBalance;
+    CAmount currentWatchOnlyBalance;
+    CAmount currentWatchUnconfBalance;
+    CAmount currentWatchImmatureBalance;
+    int nDisplayUnit;
 
     TxViewDelegate *txdelegate;
     TransactionFilterProxy *filter;
 
 private slots:
+    void toggleDarksend();
+    void darksendAuto();
+    void darksendReset();
     void updateDisplayUnit();
     void handleTransactionClicked(const QModelIndex &index);
     void updateAlerts(const QString &warnings);
+    void updateWatchOnlyLabels(bool showWatchOnly);
 };
 
-#endif // OVERVIEWPAGE_H
+#endif // BITCOIN_QT_OVERVIEWPAGE_H
